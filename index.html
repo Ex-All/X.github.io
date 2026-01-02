@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-WisDom</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            /* 白天模式变量 - 增强版 */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-tertiary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-primary: #4263eb;
+            --accent-secondary: #5c7cfa;
+            --accent-light: #edf2ff;
+            --user-msg-bg: #4263eb;
+            --user-msg-text: #ffffff;
+            --ai-msg-bg: #ffffff;
+            --ai-msg-text: #212529;
+            --system-msg-bg: #f8f9fa;
+            --system-msg-text: #495057;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --code-bg: #f8f9fa;
+            --code-border: #e9ecef;
+            --code-text: #212529;
+            --success-color: #2b8a3e;
+            --warning-color: #e67700;
+            --error-color: #e03131;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        .dark-mode {
+            /* 黑夜模式变量 */
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --text-tertiary: #6c757d;
+            --border-color: #495057;
+            --accent-primary: #5c7cfa;
+            --accent-secondary: #748ffc;
+            --accent-light: #2b3a67;
+            --user-msg-bg: #4263eb;
+            --user-msg-text: #ffffff;
+            --ai-msg-bg: #2d2d2d;
+            --ai-msg-text: #e9ecef;
+            --system-msg-bg: #343a40;
+            --system-msg-text: #adb5bd;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.25);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.35);
+            --code-bg: #2d2d2d;
+            --code-border: #495057;
+            --code-text: #e9ecef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            width: 60px;
+            height: 30px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+
+        .theme-toggle i {
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+
+        .theme-toggle .fa-sun {
+            color: #f59f00;
+        }
+
+        .theme-toggle .fa-moon {
+            color: #495057;
+        }
+
+        .dark-mode .theme-toggle .fa-moon {
+            color: #f8f9fa;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .dark-mode .theme-toggle::before {
+            transform: translateX(30px);
+        }
+
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-title i {
+            margin-right: 10px;
+            color: var(--accent-primary);
+        }
+
+        .model-selector {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 8px 15px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            margin-left: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+        }
+
+        .message-content {
+            padding: 18px 22px;
+            border-radius: var(--radius-lg);
+            line-height: 1.7;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            width: 100%;
+        }
+
+        .user-message .message-content {
+            background: var(--user-msg-bg);
+            color: var(--user-msg-text);
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message .message-content {
+            background: var(--ai-msg-bg);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 5px;
+            color: var(--ai-msg-text);
+        }
+
+        .system-message .message-content {
+            background: var(--system-msg-bg);
+            color: var(--system-msg-text);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            max-width: 100%;
+        }
+
+        .message-sender {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .message-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .user-message .message-avatar {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-message .message-avatar {
+            background: var(--accent-light);
+            color: var(--accent-primary);
+        }
+
+        .system-message .message-avatar {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+        }
+
+        /* Markdown 样式增强 */
+        .message-text {
+            overflow-x: auto;
+            font-size: 1rem;
+        }
+
+        .message-text p {
+            margin-bottom: 12px;
+        }
+
+        .message-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-text h1 {
+            font-size: 1.8rem;
+            margin: 20px 0 10px;
+            color: var(--text-primary);
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+        }
+
+        .message-text h2 {
+            font-size: 1.5rem;
+            margin: 18px 0 8px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        .message-text h3 {
+            font-size: 1.3rem;
+            margin: 16px 0 8px;
+            color: var(--text-primary);
+        }
+
+        .message-text h4 {
+            font-size: 1.1rem;
+            margin: 14px 0 8px;
+            color: var(--text-primary);
+        }
+
+        .message-text h5, .message-text h6 {
+            font-size: 1rem;
+            margin: 12px 0 8px;
+            color: var(--text-primary);
+        }
+
+        .message-text ul, .message-text ol {
+            margin-left: 25px;
+            margin-bottom: 12px;
+        }
+
+        .message-text ul {
+            list-style-type: disc;
+        }
+
+        .message-text ol {
+            list-style-type: decimal;
+        }
+
+        .message-text li {
+            margin-bottom: 6px;
+        }
+
+        .message-text li > ul, .message-text li > ol {
+            margin-top: 6px;
+            margin-bottom: 0;
+        }
+
+        /* 代码样式增强 */
+        .message-text code {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.95em;
+            color: var(--code-text);
+        }
+
+        .message-text pre {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin: 18px 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .message-text pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .message-text blockquote {
+            border-left: 4px solid var(--accent-primary);
+            padding: 12px 18px;
+            margin: 18px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+            background-color: var(--bg-tertiary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .message-text table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .message-text th, .message-text td {
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        .message-text th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+        }
+
+        .message-text tr:nth-child(even) {
+            background-color: var(--bg-tertiary);
+        }
+
+        .message-text a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .message-text a:hover {
+            border-bottom: 1px solid var(--accent-primary);
+        }
+
+        .message-text img {
+            max-width: 100%;
+            border-radius: var(--radius-sm);
+            margin: 15px 0;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .ai-message .message-time, .system-message .message-time {
+            text-align: left;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .message-input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 15px 20px;
+            padding-right: 50px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none;
+            min-height: 60px;
+            max-height: 200px;
+            transition: border 0.3s, box-shadow 0.3s;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .markdown-hint {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: help;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            align-self: flex-end;
+            height: 60px;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 18px 22px;
+            background: var(--ai-msg-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            align-self: flex-start;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .typing-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-primary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+            40% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            padding: 30px;
+            overflow-y: auto;
+            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 100;
+            border-left: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .settings-panel.active {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s, background-color 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+        }
+
+        .close-settings:hover {
+            color: var(--accent-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .setting-group {
+            margin-bottom: 25px;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .setting-label i {
+            margin-right: 8px;
+            color: var(--accent-primary);
+        }
+
+        .setting-input, .setting-select, .setting-textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .setting-input:focus, .setting-select:focus, .setting-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .setting-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .setting-hint {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .advanced-settings {
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 25px;
+        }
+
+        .advanced-settings-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-danger {
+            background: rgba(224, 49, 49, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(224, 49, 49, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(224, 49, 49, 0.2);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-tertiary);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.1rem;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 500px;
+        }
+
+        .feature {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        .feature:hover {
+            transform: translateY(-3px);
+        }
+
+        .feature i {
+            color: var(--accent-primary);
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .theme-toggle {
+                align-self: flex-end;
+            }
+            
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .features-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .message-text {
+                font-size: 0.95rem;
+            }
+            
+            .message-text pre {
+                padding: 15px;
+            }
+            
+            .message-text code {
+                font-size: 0.9em;
+            }
+            
+            .model-selector {
+                margin-top: 10px;
+                width: 100%;
+                margin-left: 0;
+            }
+            
+            .chat-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-container {
+                flex-direction: column;
+            }
+            
+            .send-btn {
+                width: 100%;
+                height: 50px;
+            }
+            
+            .message-content {
+                padding: 15px 18px;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .header-controls {
+                gap: 8px;
+            }
+            
+            .icon-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div>
+                    <h1>X Wisdom</h1>
+                    <div class="subtitle">支持Markdown渲染和白天/黑夜模式切换的智能对话系统</div>
+                </div>
+            </div>
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-sun"></i>
+                <i class="fas fa-moon"></i>
+            </div>
+        </header>
+        
+        <div class="app-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <i class="fas fa-robot"></i>AI
+                    <select class="model-selector" id="modelSelector">
+                        <option value="gpt4">ChatGPT-4 (GPT-5 Nano)</option>
+                        <option value="qwen3">Qwen-3 Coder</option>
+                        <option value="deepseek">DeepSeek 3.2</option>
+                        <option value="claude">Claude 4.5 Hiku</option>
+                    </select>
+                </div>
+                <div class="header-controls">
+                    <button class="icon-btn" id="clearChatBtn" title="清除对话">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button class="icon-btn" id="settingsBtn" title="设置">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="icon-btn" id="markdownHelpBtn" title="Markdown帮助">
+                        <i class="fas fa-markdown"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="messages-container" id="messagesContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="empty-text">
+                        开始与AI助手对话吧！支持Markdown格式，可切换白天/黑夜模式。
+                    </div>
+                    <div class="features-list">
+                        <div class="feature">
+                            <i class="fas fa-code"></i>
+                            <span>代码高亮显示</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-table"></i>
+                            <span>表格支持</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-list"></i>
+                            <span>列表和引用</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-moon"></i>
+                            <span>白天/黑夜模式</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-cogs"></i>
+                            <span>多模型切换</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-text">AI正在思考</div>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="message-input-container">
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="输入消息... (支持Markdown格式，Shift+Enter换行，Enter发送)" 
+                        rows="1"
+                    ></textarea>
+                    <div class="markdown-hint" id="markdownHint" title="支持Markdown语法：# 标题, **粗体**, *斜体*, ```代码块```, - 列表等">
+                        <i class="fab fa-markdown"></i> MD
+                    </div>
+                </div>
+                <button class="send-btn" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i> 发送
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">对话设置</h2>
+            <button class="close-settings" id="closeSettings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">
+                <i class="fas fa-user-id"></i> 用户 ID (UID)
+            </label>
+            <input 
+                type="number" 
+                class="setting-input" 
+                id="uidInput" 
+                placeholder="输入6位数字UID (可选)"
+                min="100000"
+                max="999999"
+            >
+            <div class="setting-hint">
+                使用6位数字UID可以启用记忆对话功能，云端存储数据每天零点准时清理。不填写则使用默认共享记忆。
+            </div>
+            <button class="btn btn-secondary" id="generateUidBtn" style="margin-top: 10px; width: 100%;">
+                <i class="fas fa-random"></i> 生成随机UID
+            </button>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">
+                <i class="fas fa-code"></i> 返回格式
+            </label>
+            <select class="setting-select" id="typeSelect">
+                <option value="text">text - 文本格式</option>
+                <option value="json">json - JSON格式</option>
+            </select>
+            <div class="setting-hint">
+                选择API返回的数据格式，json格式包含更多结构化信息。
+            </div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">
+                <i class="fas fa-heading"></i> 系统提示词（请在提示词后添加）
+            </label>
+            <textarea 
+                class="setting-textarea" 
+                id="systemInput" 
+                placeholder="例如：你是一个专业的编程助手，请用简洁的语言回答问题，并提供代码示例...回答请使用Markdown格式。"
+            ></textarea>
+            <div class="setting-hint">
+                提示词将影响AI的回复风格和内容。你可以要求AI扮演特定角色或用特定格式回答。
+            </div>
+        </div>
+        
+        <!-- 高级设置区域 -->
+        <div class="advanced-settings">
+            <div class="advanced-settings-title">
+                <i class="fas fa-sliders-h"></i> 高级设置
+            </div>
+            
+            <div class="setting-group">
+                <label class="setting-label">
+                    <i class="fas fa-bolt"></i> API 端点
+                </label>
+                <input 
+                    type="text" 
+                    class="setting-input" 
+                    id="apiEndpoint" 
+                    value="https://api.jkyai.top/API/gpt5-nano/index.php"
+                >
+                <div class="setting-hint">
+                    当前使用的API端点，如需更改请直接修改此输入框。<br>
+                    Qwen-3: https://api.jkyai.top/API/qwen3-coder/index.php<br>
+                    ChatGPT-4: https://api.jkyai.top/API/gpt5-nano/index.php<br>
+                    DeepSeek: https://api.jkyai.top/API/depsek3.2.php<br>
+                    Claude4.5-hiku: https://api.jkyai.top/API/hiku-4.5/index.php
+                </div>
+            </div>
+        </div>
+        
+        <div class="setting-group">
+            <button class="btn btn-danger" id="clearConversationBtn" style="width: 100%;">
+                <i class="fas fa-trash-alt"></i> 清除当前对话记录
+            </button>
+            <div class="setting-hint">
+                注意：清除对话记录不会影响云端存储的记忆（如果使用了UID）。
+            </div>
+        </div>
+        
+        <div class="setting-group">
+            <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%;">
+                <i class="fas fa-save"></i> 保存设置
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // DOM 元素
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const uidInput = document.getElementById('uidInput');
+        const typeSelect = document.getElementById('typeSelect');
+        const systemInput = document.getElementById('systemInput');
+        const clearConversationBtn = document.getElementById('clearConversationBtn');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const generateUidBtn = document.getElementById('generateUidBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const apiEndpoint = document.getElementById('apiEndpoint');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const markdownHelpBtn = document.getElementById('markdownHelpBtn');
+        const markdownHint = document.getElementById('markdownHint');
+        const modelSelector = document.getElementById('modelSelector');
+        
+        // 模型配置
+        const modelConfigs = {
+            gpt4: {
+                name: "ChatGPT-4",
+                endpoint: "https://api.jkyai.top/API/gpt5-nano/index.php"
+            },
+            qwen3: {
+                name: "Qwen-3 Coder",
+                endpoint: "https://api.jkyai.top/API/qwen3-coder/index.php"
+            },
+            deepseek: {
+                name: "DeepSeek 3.2",
+                endpoint: "https://api.jkyai.top/API/depsek3.2.php"
+            },
+            claude: {
+                name: "Claude 4.5 Hiku",
+                endpoint: "https://api.jkyai.top/API/hiku-4.5/index.php"
+            }
+        };
+        
+        // 对话历史和设置
+        let conversationHistory = [];
+        let currentUid = localStorage.getItem('gpt5nano_uid') || '';
+        let currentType = localStorage.getItem('gpt5nano_type') || 'text';
+        let currentSystem = localStorage.getItem('gpt5nano_system') || '你是一个专业的AI助手，回答请使用Markdown格式，确保代码有正确的语法高亮，表格格式清晰，列表结构合理。';
+        let currentApiEndpoint = localStorage.getItem('gpt5nano_api') || 'https://api.jkyai.top/API/gpt5-nano/index.php';
+        let currentModel = localStorage.getItem('gpt5nano_model') || 'gpt4';
+        let isDarkMode = localStorage.getItem('gpt5nano_darkmode') === 'true';
+        
+        // 初始化
+        function init() {
+            // 设置初始主题
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // 设置当前模型
+            modelSelector.value = currentModel;
+            
+            // 从本地存储加载设置
+            if (currentUid) uidInput.value = currentUid;
+            typeSelect.value = currentType;
+            systemInput.value = currentSystem;
+            apiEndpoint.value = currentApiEndpoint;
+            
+            // 加载对话历史
+            const savedHistory = localStorage.getItem('gpt5nano_history');
+            if (savedHistory) {
+                try {
+                    conversationHistory = JSON.parse(savedHistory);
+                    renderMessages();
+                } catch (e) {
+                    console.error('加载对话历史失败:', e);
+                    conversationHistory = [];
+                }
+            }
+            
+            // 设置自动调整高度的文本区域
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+            
+            // 按Enter发送消息，按Shift+Enter换行
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 发送按钮事件
+            sendBtn.addEventListener('click', sendMessage);
+            
+            // 主题切换事件
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // 设置面板事件
+            settingsBtn.addEventListener('click', () => {
+                settingsPanel.classList.add('active');
+            });
+            
+            closeSettingsBtn.addEventListener('click', () => {
+                settingsPanel.classList.remove('active');
+            });
+            
+            // 清除对话按钮事件
+            clearConversationBtn.addEventListener('click', clearConversation);
+            clearChatBtn.addEventListener('click', clearConversation);
+            
+            // 生成随机UID按钮事件
+            generateUidBtn.addEventListener('click', generateRandomUid);
+            
+            // 保存设置按钮事件
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            
+            // Markdown帮助按钮事件
+            markdownHelpBtn.addEventListener('click', showMarkdownHelp);
+            markdownHint.addEventListener('click', showMarkdownHelp);
+            
+            // 模型选择器事件
+            modelSelector.addEventListener('change', function() {
+                currentModel = this.value;
+                localStorage.setItem('gpt5nano_model', currentModel);
+                // 更新API端点为所选模型的默认端点
+                apiEndpoint.value = modelConfigs[currentModel].endpoint;
+                currentApiEndpoint = modelConfigs[currentModel].endpoint;
+                addSystemMessage(`已切换到 ${modelConfigs[currentModel].name} 模型`);
+            });
+            
+            // 初始欢迎消息
+            if (conversationHistory.length === 0) {
+                addSystemMessage('欢迎使用X Windom对话助手！本系统支持完整的Markdown格式渲染，包括标题、列表、代码块、表格、引用等。');
+                addSystemMessage('您可以在设置中配置UID以实现记忆对话功能，或使用默认设置开始聊天。点击右上角的Markdown图标查看使用示例。');
+                addSystemMessage(`当前使用模型：${modelConfigs[currentModel].name}，您可以在聊天界面切换不同的AI模型。`);
+            }
+            
+            // 初始化代码高亮
+            hljs.configure({
+                languages: ['javascript', 'python', 'java', 'cpp', 'html', 'css', 'sql', 'bash', 'json', 'go', 'php', 'ruby']
+            });
+        }
+        
+        // 切换主题
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            localStorage.setItem('gpt5nano_darkmode', isDarkMode);
+            
+            // 重新高亮代码以适应主题变化
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+        
+        // 生成随机6位数字UID
+        function generateRandomUid() {
+            const randomUid = Math.floor(100000 + Math.random() * 900000);
+            uidInput.value = randomUid;
+            addSystemMessage(`已生成新的UID: ${randomUid}。从现在开始，对话将使用此UID进行记忆存储。`);
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            currentUid = uidInput.value;
+            currentType = typeSelect.value;
+            currentSystem = systemInput.value;
+            currentApiEndpoint = apiEndpoint.value;
+            
+            localStorage.setItem('gpt5nano_uid', currentUid);
+            localStorage.setItem('gpt5nano_type', currentType);
+            localStorage.setItem('gpt5nano_system', currentSystem);
+            localStorage.setItem('gpt5nano_api', currentApiEndpoint);
+            
+            // 关闭设置面板
+            settingsPanel.classList.remove('active');
+            
+            // 显示确认消息
+            addSystemMessage('设置已保存并生效。所有AI回复将自动以Markdown格式渲染。');
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // 添加用户消息到界面
+            addMessage('user', message);
+            
+            // 清空输入框并重置高度
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // 禁用发送按钮
+            sendBtn.disabled = true;
+            
+            // 显示打字指示器
+            typingIndicator.classList.add('active');
+            
+            try {
+                // 构建API URL
+                let apiUrl = `${currentApiEndpoint}?question=${encodeURIComponent(message)}`;
+                
+                // 添加可选参数
+                if (currentUid) apiUrl += `&uid=${currentUid}`;
+                if (currentType) apiUrl += `&type=${currentType}`;
+                if (currentSystem) apiUrl += `&system=${encodeURIComponent(currentSystem + ' 请始终使用Markdown格式回答，包括代码高亮、表格、列表等。')}`;
+                
+                // 发送请求
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`API 请求失败: ${response.status}`);
+                }
+                
+                // 根据返回格式处理响应
+                let aiResponse;
+                if (currentType === 'json') {
+                    const data = await response.json();
+                    aiResponse = data.answer || data.response || data.message || JSON.stringify(data, null, 2);
+                } else {
+                    aiResponse = await response.text();
+                }
+                
+                // 添加AI回复到界面
+                addMessage('ai', aiResponse);
+                
+                // 保存对话历史到本地存储
+                saveConversationHistory();
+                
+            } catch (error) {
+                console.error('API调用错误:', error);
+                
+                // 显示错误消息
+                addMessage('ai', `**抱歉，我遇到了一个错误**\n\n错误信息：${error.message}\n\n当前使用的模型：${modelConfigs[currentModel].name}\nAPI端点：${currentApiEndpoint}\n\n请检查网络连接或稍后重试。`);
+                
+            } finally {
+                // 隐藏打字指示器
+                typingIndicator.classList.remove('active');
+                
+                // 重新启用发送按钮
+                sendBtn.disabled = false;
+                
+                // 聚焦到输入框
+                messageInput.focus();
+            }
+        }
+        
+        // 添加消息到界面
+        function addMessage(sender, content) {
+            // 创建消息对象
+            const message = {
+                sender,
+                content,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            // 添加到历史
+            conversationHistory.push(message);
+            
+            // 渲染消息
+            renderMessages();
+            
+            // 滚动到最新消息
+            scrollToBottom();
+        }
+        
+        // 添加系统消息
+        function addSystemMessage(content) {
+            const message = {
+                sender: 'system',
+                content,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            conversationHistory.push(message);
+            renderMessages();
+            scrollToBottom();
+        }
+        
+        // 渲染所有消息
+        function renderMessages() {
+            // 如果消息容器为空，隐藏空状态
+            const emptyState = messagesContainer.querySelector('.empty-state');
+            if (emptyState && conversationHistory.length > 0) {
+                emptyState.style.display = 'none';
+            } else if (emptyState && conversationHistory.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+            
+            // 清空消息容器
+            messagesContainer.innerHTML = '';
+            
+            // 渲染每条消息
+            conversationHistory.forEach(msg => {
+                const messageElement = document.createElement('div');
+                
+                if (msg.sender === 'system') {
+                    messageElement.className = 'message system-message';
+                    messageElement.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-sender">
+                                <div class="message-avatar">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                系统提示
+                            </div>
+                            <div class="message-text">${formatMessageContent(msg.content)}</div>
+                            <div class="message-time">${msg.time}</div>
+                        </div>
+                    `;
+                } else {
+                    messageElement.className = `message ${msg.sender}-message`;
+                    
+                    const senderName = msg.sender === 'user' ? '您' : modelConfigs[currentModel].name;
+                    const senderIcon = msg.sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
+                    
+                    messageElement.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-sender">
+                                <div class="message-avatar">
+                                    <i class="${senderIcon}"></i>
+                                </div>
+                                ${senderName}
+                            </div>
+                            <div class="message-text">${formatMessageContent(msg.content)}</div>
+                            <div class="message-time">${msg.time}</div>
+                        </div>
+                    `;
+                }
+                
+                messagesContainer.appendChild(messageElement);
+            });
+            
+            // 应用代码高亮
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        }
+        
+        // 格式化消息内容（增强版Markdown解析）
+        function formatMessageContent(content) {
+            // 处理空内容
+            if (!content || content.trim() === '') {
+                return '<p>无回复内容</p>';
+            }
+            
+            // 配置marked.js
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                mangle: false,
+                headerIds: false,
+                highlight: function(code, lang) {
+                    // 处理没有指定语言的代码块
+                    if (!lang) {
+                        // 尝试自动检测语言
+                        return hljs.highlightAuto(code).value;
+                    }
+                    
+                    if (hljs.getLanguage(lang)) {
+                        try {
+                            return hljs.highlight(code, { language: lang }).value;
+                        } catch (err) {
+                            console.error('代码高亮错误:', err);
+                            // 回退到自动检测
+                            return hljs.highlightAuto(code).value;
+                        }
+                    }
+                    
+                    // 如果指定的语言不存在，使用自动检测
+                    return hljs.highlightAuto(code).value;
+                }
+            });
+            
+            // 预处理内容，修复一些常见的Markdown问题
+            let processedContent = content
+                // 修复代码块格式
+                .replace(/```(\w+)\n([\s\S]*?)```/g, (match, lang, code) => {
+                    return `\`\`\`${lang}\n${code.trim()}\n\`\`\``;
+                })
+                // 确保表格有正确的分隔线
+                .replace(/(\|.*\|)\n(\|.*\|)/g, (match, header, separator) => {
+                    if (!separator.includes('---')) {
+                        const columns = header.split('|').length - 2;
+                        const newSeparator = '|' + Array(columns).fill('---').join('|') + '|';
+                        return `${header}\n${newSeparator}`;
+                    }
+                    return match;
+                });
+            
+            // 解析Markdown并返回HTML
+            return marked.parse(processedContent);
+        }
+        
+        // 保存对话历史到本地存储
+        function saveConversationHistory() {
+            // 只保存最近的100条消息以避免本地存储过大
+            const recentHistory = conversationHistory.slice(-100);
+            localStorage.setItem('gpt5nano_history', JSON.stringify(recentHistory));
+        }
+        
+        // 清除对话
+        function clearConversation() {
+            if (confirm('确定要清除当前对话记录吗？')) {
+                conversationHistory = [];
+                localStorage.removeItem('gpt5nano_history');
+                renderMessages();
+                addSystemMessage('对话记录已清除。您可以开始新的对话。');
+            }
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 显示Markdown帮助（增强版）
+        function showMarkdownHelp() {
+            const markdownExamples = `
+## Markdown 完全使用指南
+
+### 🔤 文本格式
+- **粗体文本**：\`**粗体**\` 或 \`__粗体__\`
+- *斜体文本*：\`*斜体*\` 或 \`_斜体_\`
+- **_粗斜体_**：\`**_粗斜体_**\`
+- ~~删除线~~：\`~~删除线~~\`
+- ==标记文本==：\`==标记文本==\`
+
+### 📝 标题
+# 一级标题
+## 二级标题
+### 三级标题
+#### 四级标题
+##### 五级标题
+###### 六级标题
+
+### 📋 列表
+#### 无序列表
+- 列表项1
+- 列表项2
+  - 子列表项1
+  - 子列表项2
+
+#### 有序列表
+1. 第一项
+2. 第二项
+   1. 子项1
+   2. 子项2
+
+### 💻 代码
+#### 行内代码
+\`const hello = "world";\`
+
+#### 代码块
+\`\`\`javascript
+// JavaScript示例
+function greet(name) {
+    console.log(\`Hello, \${name}!\`);
+}
+
+// 调用函数
+greet("GPT-5 Nano");
+\`\`\`
+
+### 💬 引用
+> 这是一级引用
+>> 这是二级引用
+>>> 这是三级引用
+
+### 🔗 链接与图片
+[链接文本](https://example.com "可选标题")
+
+![图片描述](https://example.com/image.jpg "可选标题")
+
+### 📊 表格
+| 功能 | 语法 | 效果 |
+|------|------|------|
+| 粗体 | **文本** | **文本** |
+| 斜体 | *文本* | *文本* |
+| 链接 | [文本](url) | [文本](url) |
+
+### 🔧 其他
+- 分割线：\`---\` 或 \`***\`
+- 任务列表：
+  - [x] 已完成任务
+  - [ ] 未完成任务
+            `;
+            
+            // 检查是否已有帮助消息
+            const lastMessage = conversationHistory[conversationHistory.length - 1];
+            if (lastMessage && lastMessage.content.includes('Markdown 完全使用指南')) {
+                // 如果最后一条消息已经是帮助，则滚动到它
+                renderMessages();
+                scrollToBottom();
+            } else {
+                addSystemMessage(markdownExamples);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
