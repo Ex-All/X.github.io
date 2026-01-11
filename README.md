@@ -5,3 +5,5 @@
 一个仅由 HTML + JavaScript 构成的轻量级 AI 聊天界面，默认调用「云智 API」，双击 index.html 即可运行！
 
 支持 ChatGPT-4 / Qwen / DeepSeek / Claude !
+
+立即访问：[This](https://Ex-All.github.io/X.github.io)
